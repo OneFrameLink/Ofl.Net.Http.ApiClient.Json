@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <Description>Utilities for working with HTTP-based API clients that use JSON on the wire.</Description>
+    <AssemblyName>Ofl.Net.Http.ApiClient.Json</AssemblyName>
+    <PackageId>Ofl.Net.Http.ApiClient.Json</PackageId>
+    <PackageProjectUrl>https://github.com/OneFrameLink/Ofl.Net.Http.ApiClient.Json</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/OneFrameLink/Ofl.Net.Http.ApiClient.Json.git</RepositoryUrl>
+    <Version>1.0.0</Version>
+    <PackageTags>http-client api-client json</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="Ofl.Net.Http.Abstractions" Version="1.0.5" />
+    <PackageReference Include="Ofl.Net.Http.ApiClient" Version="1.0.2" />
+    <PackageReference Include="Ofl.Threading.Tasks" Version="1.0.2" />
+  </ItemGroup>
+</Project>
