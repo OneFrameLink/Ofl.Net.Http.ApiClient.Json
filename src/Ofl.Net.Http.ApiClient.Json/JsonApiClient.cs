@@ -162,7 +162,7 @@ namespace Ofl.Net.Http.ApiClient.Json
             { }
         }
 
-        private async Task<TResponse> ProcessResponseAsync<TResponse>(HttpResponseMessage httpResponseMessage,
+        protected virtual async Task<TResponse> ProcessResponseAsync<TResponse>(HttpResponseMessage httpResponseMessage,
             JsonSerializerSettings jsonSerializerSettings, CancellationToken cancellationToken)
         {
             // Validate parameters.
