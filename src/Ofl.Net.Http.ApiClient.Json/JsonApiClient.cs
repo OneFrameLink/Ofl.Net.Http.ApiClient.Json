@@ -74,7 +74,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
             // Create the HttpClient.
-            using (var client = await CreateHttpClientAsync(cancellationToken).ConfigureAwait(false))
+            HttpClient client = CreateHttpClient();
+
             // Get the response.
             using (HttpResponseMessage response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false))
                 // Process the response.
@@ -95,7 +96,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
             // Create the HttpClient.
-            using (var client = await CreateHttpClientAsync(cancellationToken).ConfigureAwait(false))
+            HttpClient client = CreateHttpClient();
+
             // Get the response.
             using (HttpResponseMessage response = await client.PostJsonForHttpResponseMessageAsync(
                 url, settings, request, cancellationToken).ConfigureAwait(false))
@@ -117,7 +119,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
             // Create the HttpClient.
-            using (var client = await CreateHttpClientAsync(cancellationToken).ConfigureAwait(false))
+            HttpClient client = CreateHttpClient();
+
             // Get the response.
             using (HttpResponseMessage response = await client.PostJsonForHttpResponseMessageAsync(
                 url, settings, request, cancellationToken).ConfigureAwait(false))
@@ -137,7 +140,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
             // Create the HttpClient.
-            using (var client = await CreateHttpClientAsync(cancellationToken).ConfigureAwait(false))
+            HttpClient client = CreateHttpClient();
+
             // Get the response.
             using (HttpResponseMessage response = await client.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
                 // Process the response.

@@ -10,6 +10,6 @@
     <PackageTags>http-client api-client json</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Ofl.Net.Http.ApiClient" Version="2.0.3" />
+    <PackageReference Include="Ofl.Net.Http.ApiClient" Version="2.0.5" />
   </ItemGroup>
 </Project>
