@@ -12,8 +12,8 @@ namespace Ofl.Net.Http.ApiClient.Json
     {
         #region Constructor
 
-        protected JsonApiClient(IHttpClientFactory httpClientFactory) :
-            base(httpClientFactory)
+        protected JsonApiClient(HttpClient httpClient) :
+            base(httpClient)
         { }
 
         #endregion
@@ -73,11 +73,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             // Create the JsonSerializer.
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
-            // Create the HttpClient.
-            HttpClient client = CreateHttpClient();
-
             // Get the response.
-            using (HttpResponseMessage response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false))
                 // Process the response.
                 return await ProcessResponseAsync<T>(response, settings, cancellationToken).ConfigureAwait(false);
         }
@@ -95,11 +92,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             // Create the serializer.
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
-            // Create the HttpClient.
-            HttpClient client = CreateHttpClient();
-
             // Get the response.
-            using (HttpResponseMessage response = await client.PostJsonForHttpResponseMessageAsync(
+            using (HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
                 url, settings, request, cancellationToken).ConfigureAwait(false))
                 // Process the response.
                 await ProcessResponseAsync(response, settings, cancellationToken).ConfigureAwait(false);
@@ -118,11 +112,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             // Create the serializer.
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
-            // Create the HttpClient.
-            HttpClient client = CreateHttpClient();
-
             // Get the response.
-            using (HttpResponseMessage response = await client.PostJsonForHttpResponseMessageAsync(
+            using (HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
                 url, settings, request, cancellationToken).ConfigureAwait(false))
                 // Process the response.
                 return await ProcessResponseAsync<TResponse>(response, settings, cancellationToken).ConfigureAwait(false);
@@ -139,11 +130,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             // Create the serializer.
             var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
 
-            // Create the HttpClient.
-            HttpClient client = CreateHttpClient();
-
             // Get the response.
-            using (HttpResponseMessage response = await client.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
                 // Process the response.
                 return await ProcessResponseAsync<TResponse>(response, settings, cancellationToken).ConfigureAwait(false);
         }
