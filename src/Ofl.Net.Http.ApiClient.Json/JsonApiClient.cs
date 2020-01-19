@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Ofl.Threading.Tasks;
 
 namespace Ofl.Net.Http.ApiClient.Json
 {
@@ -20,40 +18,34 @@ namespace Ofl.Net.Http.ApiClient.Json
 
         #region Overrides.
 
-        public static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new JsonSerializerSettings
-        {
-            // Camel case.
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+        protected virtual JsonSerializerOptions CreateJsonSerializerOptions() =>
+            JsonSerializerOptionsExtensions.CreateDefaultJsonSerializerOptions();
 
-            // Don't send null values.
-            NullValueHandling = NullValueHandling.Ignore
-        };
-
-        private static readonly ValueTask<JsonSerializerSettings> JsonSerializerSettingsValueTask = ValueTaskExtensions.FromResult(DefaultJsonSerializerSettings);
-
-        protected virtual ValueTask<JsonSerializerSettings> CreateJsonSerializerSettingsAsync(CancellationToken cancellationToken) =>
-            JsonSerializerSettingsValueTask;
-
-        protected override async Task<HttpResponseMessage> ProcessHttpResponseMessageAsync(HttpResponseMessage httpResponseMessage,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> ProcessHttpResponseMessageAsync(
+            HttpResponseMessage httpResponseMessage,
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
 
             // Get the serializer settings.
-            JsonSerializerSettings settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
+            JsonSerializerOptions options = CreateJsonSerializerOptions();
 
             // Call the overload.
-            return await ProcessHttpResponseMessageAsync(httpResponseMessage, settings, cancellationToken).
+            return await ProcessHttpResponseMessageAsync(httpResponseMessage, options, cancellationToken).
                 ConfigureAwait(false);
         }
 
-        protected virtual Task<HttpResponseMessage> ProcessHttpResponseMessageAsync(HttpResponseMessage httpResponseMessage,
-            JsonSerializerSettings jsonSerializerSettings, CancellationToken cancellationToken)
+        protected virtual Task<HttpResponseMessage> ProcessHttpResponseMessageAsync(
+            HttpResponseMessage httpResponseMessage,
+            JsonSerializerOptions jsonSerializerOptions,
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
-            if (jsonSerializerSettings == null) throw new ArgumentNullException(nameof(jsonSerializerSettings));
+            if (jsonSerializerOptions == null) throw new ArgumentNullException(nameof(jsonSerializerOptions));
 
             // Ensure the status code.
             httpResponseMessage.EnsureSuccessStatusCode();
@@ -70,17 +62,21 @@ namespace Ofl.Net.Http.ApiClient.Json
             // Format the url.
             url = await FormatUrlAsync(url, cancellationToken).ConfigureAwait(false);
 
-            // Create the JsonSerializer.
-            var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
+            // Get the options.
+            var options = CreateJsonSerializerOptions();
 
             // Get the response.
-            using (HttpResponseMessage response = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false))
-                // Process the response.
-                return await ProcessResponseAsync<T>(response, settings, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage response = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+
+            // Process the response.
+            return await ProcessResponseAsync<T>(response, options, cancellationToken).ConfigureAwait(false);
         }
 
-        protected override async Task PostAsync<TRequest>(string url, TRequest request,
-            CancellationToken cancellationToken)
+        protected override async Task PostAsync<TRequest>(
+            string url, 
+            TRequest request,
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException(nameof(url));
@@ -90,17 +86,21 @@ namespace Ofl.Net.Http.ApiClient.Json
             url = await FormatUrlAsync(url, cancellationToken).ConfigureAwait(false);
 
             // Create the serializer.
-            var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
+            var options = CreateJsonSerializerOptions();
 
             // Get the response.
-            using (HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
-                url, settings, request, cancellationToken).ConfigureAwait(false))
-                // Process the response.
-                await ProcessResponseAsync(response, settings, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
+                url, options, request, cancellationToken).ConfigureAwait(false);
+
+            // Process the response.
+            await ProcessResponseAsync(response, options, cancellationToken).ConfigureAwait(false);
         }
 
-        protected override async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest request,
-            CancellationToken cancellationToken)
+        protected override async Task<TResponse> PostAsync<TRequest, TResponse>(
+            string url, 
+            TRequest request,
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException(nameof(url));
@@ -110,13 +110,14 @@ namespace Ofl.Net.Http.ApiClient.Json
             url = await FormatUrlAsync(url, cancellationToken).ConfigureAwait(false);
 
             // Create the serializer.
-            var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
+            var options = CreateJsonSerializerOptions();
 
             // Get the response.
-            using (HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
-                url, settings, request, cancellationToken).ConfigureAwait(false))
-                // Process the response.
-                return await ProcessResponseAsync<TResponse>(response, settings, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
+                url, options, request, cancellationToken).ConfigureAwait(false);
+
+            // Process the response.
+            return await ProcessResponseAsync<TResponse>(response, options, cancellationToken).ConfigureAwait(false);
         }
 
         protected override async Task<TResponse> DeleteAsync<TResponse>(string url, CancellationToken cancellationToken)
@@ -128,44 +129,52 @@ namespace Ofl.Net.Http.ApiClient.Json
             url = await FormatUrlAsync(url, cancellationToken).ConfigureAwait(false);
 
             // Create the serializer.
-            var settings = await CreateJsonSerializerSettingsAsync(cancellationToken).ConfigureAwait(false);
+            var options = CreateJsonSerializerOptions();
 
             // Get the response.
-            using (HttpResponseMessage response = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
-                // Process the response.
-                return await ProcessResponseAsync<TResponse>(response, settings, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage response = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+
+            // Process the response.
+            return await ProcessResponseAsync<TResponse>(response, options, cancellationToken).ConfigureAwait(false);
         }
 
         #endregion
 
         #region Helpers
 
-        private async Task ProcessResponseAsync(HttpResponseMessage httpResponseMessage,
-            JsonSerializerSettings jsonSerializerSettings, CancellationToken cancellationToken)
+        private async Task ProcessResponseAsync(
+            HttpResponseMessage httpResponseMessage,
+            JsonSerializerOptions jsonSerializerOptions, 
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
-            if (jsonSerializerSettings == null) throw new ArgumentNullException(nameof(jsonSerializerSettings));
+            if (jsonSerializerOptions == null) throw new ArgumentNullException(nameof(jsonSerializerOptions));
 
             // Process the response.
-            using (await ProcessHttpResponseMessageAsync(httpResponseMessage, jsonSerializerSettings, cancellationToken).
-                ConfigureAwait(false))
-            // Do nothing.
-            { }
+            using var _ = await 
+                ProcessHttpResponseMessageAsync(httpResponseMessage, jsonSerializerOptions, cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        protected virtual async Task<TResponse> ProcessResponseAsync<TResponse>(HttpResponseMessage httpResponseMessage,
-            JsonSerializerSettings jsonSerializerSettings, CancellationToken cancellationToken)
+        protected virtual async Task<TResponse> ProcessResponseAsync<TResponse>(
+            HttpResponseMessage httpResponseMessage,
+            JsonSerializerOptions jsonSerializerOptions,
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
-            if (jsonSerializerSettings == null) throw new ArgumentNullException(nameof(jsonSerializerSettings));
+            if (jsonSerializerOptions == null) throw new ArgumentNullException(nameof(jsonSerializerOptions));
 
             // Process the response.
-            using (HttpResponseMessage response = await ProcessHttpResponseMessageAsync(httpResponseMessage, jsonSerializerSettings, cancellationToken).
-                ConfigureAwait(false))
-                // Deserialize.
-                return await response.ToObjectAsync<TResponse>(jsonSerializerSettings, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage response = await 
+                ProcessHttpResponseMessageAsync(httpResponseMessage, jsonSerializerOptions, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Deserialize.
+            return await response.ToObjectAsync<TResponse>(jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
         }
 
         #endregion

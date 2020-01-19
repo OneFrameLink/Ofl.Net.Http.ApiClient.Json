@@ -1,15 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Description>Utilities for working with HTTP-based API clients that use JSON on the wire.</Description>
     <AssemblyName>Ofl.Net.Http.ApiClient.Json</AssemblyName>
     <PackageId>Ofl.Net.Http.ApiClient.Json</PackageId>
     <PackageProjectUrl>https://github.com/OneFrameLink/Ofl.Net.Http.ApiClient.Json</PackageProjectUrl>
     <RepositoryUrl>https://github.com/OneFrameLink/Ofl.Net.Http.ApiClient.Json.git</RepositoryUrl>
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
     <PackageTags>http-client api-client json</PackageTags>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Ofl.Net.Http.ApiClient" Version="2.0.6" />
+    <PackageReference Include="Ofl.Net.Http.ApiClient" Version="3.0.8" />
+    <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
 </Project>
