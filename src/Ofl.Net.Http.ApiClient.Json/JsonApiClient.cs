@@ -54,10 +54,15 @@ namespace Ofl.Net.Http.ApiClient.Json
             return Task.FromResult(httpResponseMessage);
         }
 
-        protected override async Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
+        protected override async Task<TReturn> GetAsync<TResponse, TReturn>(
+            string url, 
+            Func<HttpResponseMessage, TResponse, TReturn> transformer,
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException(nameof(url));
+            if (transformer == null) throw new ArgumentNullException(nameof(transformer));
 
             // Format the url.
             url = await FormatUrlAsync(url, cancellationToken).ConfigureAwait(false);
@@ -69,7 +74,12 @@ namespace Ofl.Net.Http.ApiClient.Json
             using HttpResponseMessage response = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
             // Process the response.
-            return await ProcessResponseAsync<T>(response, options, cancellationToken).ConfigureAwait(false);
+            return await ProcessResponseAsync(
+                response, 
+                options, 
+                transformer,
+                cancellationToken
+            ).ConfigureAwait(false);
         }
 
         protected override async Task PostAsync<TRequest>(
@@ -96,15 +106,17 @@ namespace Ofl.Net.Http.ApiClient.Json
             await ProcessResponseAsync(response, options, cancellationToken).ConfigureAwait(false);
         }
 
-        protected override async Task<TResponse> PostAsync<TRequest, TResponse>(
-            string url, 
+        protected override async Task<TReturn> PostAsync<TRequest, TResponse, TReturn>(
+            string url,
             TRequest request,
+            Func<HttpResponseMessage, TResponse, TReturn> transformer,
             CancellationToken cancellationToken
         )
         {
             // Validate parameters.
             if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException(nameof(url));
             if (request == null) throw new ArgumentNullException(nameof(request));
+            if (transformer == null) throw new ArgumentNullException(nameof(transformer));
 
             // Format the url.
             url = await FormatUrlAsync(url, cancellationToken).ConfigureAwait(false);
@@ -113,17 +125,29 @@ namespace Ofl.Net.Http.ApiClient.Json
             var options = CreateJsonSerializerOptions();
 
             // Get the response.
-            using HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
-                url, options, request, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage response = await HttpClient
+                .PostJsonForHttpResponseMessageAsync(
+                    url, options, request, cancellationToken
+                ).ConfigureAwait(false);
 
             // Process the response.
-            return await ProcessResponseAsync<TResponse>(response, options, cancellationToken).ConfigureAwait(false);
+            return await ProcessResponseAsync<TResponse, TReturn>(
+                response, 
+                options, 
+                transformer,
+                cancellationToken
+            ).ConfigureAwait(false);
         }
 
-        protected override async Task<TResponse> DeleteAsync<TResponse>(string url, CancellationToken cancellationToken)
+        protected override async Task<TReturn> DeleteAsync<TResponse, TReturn>(
+            string url, 
+            Func<HttpResponseMessage, TResponse, TReturn> transformer,
+            CancellationToken cancellationToken
+        )
         {
             // Validate parameters.
             if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException(nameof(url));
+            if (transformer == null) throw new ArgumentNullException(nameof(transformer));
 
             // Format the url.
             url = await FormatUrlAsync(url, cancellationToken).ConfigureAwait(false);
@@ -132,10 +156,14 @@ namespace Ofl.Net.Http.ApiClient.Json
             var options = CreateJsonSerializerOptions();
 
             // Get the response.
-            using HttpResponseMessage response = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage message = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
 
             // Process the response.
-            return await ProcessResponseAsync<TResponse>(response, options, cancellationToken).ConfigureAwait(false);
+            TResponse response = await ProcessResponseAsync<TResponse>(
+                message, options, cancellationToken).ConfigureAwait(false);
+
+            // Transform and return.
+            return transformer(message, response);
         }
 
         #endregion
