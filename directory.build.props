@@ -9,7 +9,7 @@
 	  <!-- Licensing, as per: https://github.com/NuGet/Home/wiki/Packaging-License-within-the-nupkg#project-properties -->
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-	<PackageIcon>icon.png</PackageIcon>
+  	<PackageIcon>icon.png</PackageIcon>
 
     <!-- Sourcelink, as per https://github.com/dotnet/sourcelink -->
     <!-- Declare that the Repository URL can be published to NuSpec -->

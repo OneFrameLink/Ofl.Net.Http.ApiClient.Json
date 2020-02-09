@@ -158,7 +158,7 @@ namespace Ofl.Net.Http.ApiClient.Json
                 .ConfigureAwait(false);
         }
 
-        protected virtual async Task<TResponse> ProcessResponseAsync<TResponse>(
+        protected virtual Task<TResponse> ProcessResponseAsync<TResponse>(
             HttpResponseMessage httpResponseMessage,
             JsonSerializerOptions jsonSerializerOptions,
             CancellationToken cancellationToken
@@ -168,13 +168,40 @@ namespace Ofl.Net.Http.ApiClient.Json
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
             if (jsonSerializerOptions == null) throw new ArgumentNullException(nameof(jsonSerializerOptions));
 
+            // Call the overload.
+            return ProcessResponseAsync<TResponse, TResponse>(
+                httpResponseMessage,
+                jsonSerializerOptions,
+                (m, r) => r,
+                cancellationToken
+            );
+        }
+
+        protected virtual async Task<TReturn> ProcessResponseAsync<TResponse, TReturn>(
+            HttpResponseMessage httpResponseMessage,
+            JsonSerializerOptions jsonSerializerOptions,
+            Func<HttpResponseMessage, TResponse, TReturn> transformer,
+            CancellationToken cancellationToken
+        )
+        {
+            // Validate parameters.
+            if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
+            if (jsonSerializerOptions == null) throw new ArgumentNullException(nameof(jsonSerializerOptions));
+            if (transformer == null) throw new ArgumentNullException(nameof(transformer));
+
             // Process the response.
-            using HttpResponseMessage response = await 
+            using HttpResponseMessage message = await
                 ProcessHttpResponseMessageAsync(httpResponseMessage, jsonSerializerOptions, cancellationToken)
                 .ConfigureAwait(false);
 
             // Deserialize.
-            return await response.ToObjectAsync<TResponse>(jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+            TResponse response = await message.ToObjectAsync<TResponse>(
+                jsonSerializerOptions, 
+                cancellationToken
+            ).ConfigureAwait(false);
+
+            // Transform.
+            return transformer(message, response);
         }
 
         #endregion
