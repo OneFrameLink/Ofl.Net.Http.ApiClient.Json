@@ -10,9 +10,26 @@ namespace Ofl.Net.Http.ApiClient.Json
     {
         #region Constructor
 
-        protected JsonApiClient(HttpClient httpClient) :
-            base(httpClient)
+        protected JsonApiClient(
+            HttpClient httpClient
+        ) : this(httpClient, false)
         { }
+
+        protected JsonApiClient(
+            HttpClient httpClient,
+            bool includeCharsetInContentTypeHeader
+        ) :
+            base(httpClient)
+        { 
+            // Assign values.
+            IncludeCharsetInContentTypeHeader = includeCharsetInContentTypeHeader;
+        }
+
+        #endregion
+
+        #region Instance, read-only state
+
+        protected bool IncludeCharsetInContentTypeHeader { get; }
 
         #endregion
 
@@ -99,8 +116,15 @@ namespace Ofl.Net.Http.ApiClient.Json
             var options = CreateJsonSerializerOptions();
 
             // Get the response.
-            using HttpResponseMessage response = await HttpClient.PostJsonForHttpResponseMessageAsync(
-                url, options, request, cancellationToken).ConfigureAwait(false);
+            using HttpResponseMessage response = await HttpClient
+                .PostJsonForHttpResponseMessageAsync(
+                    url,
+                    IncludeCharsetInContentTypeHeader,
+                    options, 
+                    request, 
+                    cancellationToken
+            )
+            .ConfigureAwait(false);
 
             // Process the response.
             await ProcessResponseAsync(response, options, cancellationToken).ConfigureAwait(false);
@@ -127,11 +151,15 @@ namespace Ofl.Net.Http.ApiClient.Json
             // Get the response.
             using HttpResponseMessage response = await HttpClient
                 .PostJsonForHttpResponseMessageAsync(
-                    url, options, request, cancellationToken
+                    url, 
+                    IncludeCharsetInContentTypeHeader,
+                    options, 
+                    request, 
+                    cancellationToken
                 ).ConfigureAwait(false);
 
             // Process the response.
-            return await ProcessResponseAsync<TResponse, TReturn>(
+            return await ProcessResponseAsync(
                 response, 
                 options, 
                 transformer,

@@ -11,21 +11,50 @@ namespace Ofl.Net.Http.ApiClient.Json
     {
         #region PostJsonAsync
 
-        public static Task PostJsonAsyncWithoutResponse<TRequest>(
+        public static Task PostJsonWithoutResponseAsync<TRequest>(
             this HttpClient httpClient,
             string uri,
             TRequest request,
             CancellationToken cancellationToken
-        ) => httpClient.PostJsonAsyncWithoutResponse(
+        ) => httpClient.PostJsonWithoutResponseAsync(
             uri, 
-            JsonSerializerOptionsExtensions.DefaultJsonSerializerOptions,
+            false,
             request, 
             cancellationToken
         );
 
-        public static async Task PostJsonAsyncWithoutResponse<TRequest>(
+        public static Task PostJsonWithoutResponseAsync<TRequest>(
+            this HttpClient httpClient,
+            string uri,
+            bool includeCharset,
+            TRequest request,
+            CancellationToken cancellationToken
+        ) => httpClient.PostJsonWithoutResponseAsync(
+            uri,
+            includeCharset,
+            JsonSerializerOptionsExtensions.DefaultJsonSerializerOptions,
+            request,
+            cancellationToken
+        );
+
+        public static Task PostJsonWithoutResponseAsync<TRequest>(
+            this HttpClient httpClient,
+            string uri,
+            JsonSerializerOptions jsonSerializerOptions,
+            TRequest request,
+            CancellationToken cancellationToken
+        ) => httpClient.PostJsonWithoutResponseAsync<TRequest>(
+            uri,
+            false,
+            jsonSerializerOptions,
+            request,
+            cancellationToken
+        );
+
+        public static async Task PostJsonWithoutResponseAsync<TRequest>(
             this HttpClient httpClient, 
             string uri,
+            bool includeCharset,
             JsonSerializerOptions jsonSerializerOptions,
             TRequest request, 
             CancellationToken cancellationToken
@@ -41,6 +70,7 @@ namespace Ofl.Net.Http.ApiClient.Json
             using HttpResponseMessage httpResponseMessage = await httpClient.
                 PostJsonForHttpResponseMessageAsync(
                     uri,
+                    includeCharset,
                     jsonSerializerOptions,
                     request,
                     cancellationToken
@@ -58,13 +88,43 @@ namespace Ofl.Net.Http.ApiClient.Json
             CancellationToken cancellationToken
         ) => httpClient.PostJsonAsync<TRequest, TResponse>(
             uri,
+            false,
+            request, 
+            cancellationToken
+        );
+
+        public static Task<TResponse> PostJsonAsync<TRequest, TResponse>(
+            this HttpClient httpClient,
+            string uri,
+            bool includeCharset,
+            TRequest request,
+            CancellationToken cancellationToken
+        ) => httpClient.PostJsonAsync<TRequest, TResponse>(
+            uri,
+            includeCharset,
             JsonSerializerOptionsExtensions.DefaultJsonSerializerOptions,
-            request, cancellationToken
+            request, 
+            cancellationToken
+        );
+
+        public static Task<TResponse> PostJsonAsync<TRequest, TResponse>(
+            this HttpClient httpClient,
+            string uri,
+            JsonSerializerOptions jsonSerializerOptions,
+            TRequest request,
+            CancellationToken cancellationToken
+        ) => httpClient.PostJsonAsync<TRequest, TResponse>(
+            uri,
+            false,
+            jsonSerializerOptions,
+            request,
+            cancellationToken
         );
 
         public static async Task<TResponse> PostJsonAsync<TRequest, TResponse>(
             this HttpClient httpClient,
             string uri,
+            bool includeCharset,
             JsonSerializerOptions jsonSerializerOptions,
             TRequest request, 
             CancellationToken cancellationToken
@@ -78,7 +138,8 @@ namespace Ofl.Net.Http.ApiClient.Json
             // Get the message.
             using HttpResponseMessage httpResponseMessage = await httpClient.
                 PostJsonForHttpResponseMessageAsync(
-                    uri, 
+                    uri,
+                    includeCharset,
                     jsonSerializerOptions,
                     request, 
                     cancellationToken
@@ -101,9 +162,24 @@ namespace Ofl.Net.Http.ApiClient.Json
             CancellationToken cancellationToken
         ) => httpClient.PostJsonForHttpResponseMessageAsync(uri, request, cancellationToken);
 
+        public static Task<HttpResponseMessage> PostJsonForHttpResponseMessageAsync<TRequest>(
+            this HttpClient httpClient,
+            string uri,
+            JsonSerializerOptions jsonSerializerOptions,
+            TRequest request,
+            CancellationToken cancellationToken
+        ) => httpClient.PostJsonForHttpResponseMessageAsync<TRequest>(
+            uri,
+            false,
+            jsonSerializerOptions,
+            request,
+            cancellationToken
+        );
+
         public static async Task<HttpResponseMessage> PostJsonForHttpResponseMessageAsync<TRequest>(
             this HttpClient httpClient,
-            string uri, 
+            string uri,
+            bool includeCharset,
             JsonSerializerOptions jsonSerializerOptions, 
             TRequest request, 
             CancellationToken cancellationToken
@@ -120,9 +196,14 @@ namespace Ofl.Net.Http.ApiClient.Json
 
             // Create the byte content.
             using var content = new ByteArrayContent(bytes);
-            
+
+            // Get the content type.
+            string contentType = "application/json" + (
+                includeCharset ? "; charset=utf-8" : null
+            );
+
             // Set the headers.
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+            content.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
 
             // Post and return the message.
             return await httpClient.PostAsync(uri, content, cancellationToken).ConfigureAwait(false);
